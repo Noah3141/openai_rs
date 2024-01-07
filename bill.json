@@ -1,0 +1,8 @@
+{
+  "cost": 1.3893499,
+  "prompt_tokens": 345,
+  "completion_tokens": 6688,
+  "total_tokens": 7033,
+  "query_count": 23,
+  "cache_retrievals": 3
+}

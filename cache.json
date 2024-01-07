@@ -1,0 +1,32 @@
+{
+  "what's the deal with airplane food?": {
+    "prompt": "What's the deal with airplane food?",
+    "cost": 0.051450003,
+    "response": {
+      "id": "chatcmpl-8e7QCx1M8JoUqkWCxzR0bDT9lgNtt",
+      "object": "chat.completion",
+      "created": 1704572340,
+      "model": "gpt-3.5-turbo-0613",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "Airplane food has long been a subject of jokes and criticism. There are a few reasons for this perception:\n\n1. Constraints of the environment: Airplane cabins are pressurized at a lower altitude, which affects our taste and smell receptors, making food seem less flavorful. The dry air and low humidity also affect our perception of taste, making food taste blander.\n\n2. Logistics and preparation: Preparing food for thousands of passengers on a tight schedule can be challenging. Airline meals are often pre-cooked, frozen, and reheated onboard, which can affect the quality and taste. The reheating process can lead to texture changes and loss of moisture in the food.\n\n3. Cost considerations: Airlines often face budget constraints and aim to minimize costs. This can result in compromises on the quality and variety of ingredients used in meals.\n\nHowever, it's worth noting that in recent years, many airlines have made efforts to improve the quality of their onboard meals. Some carriers have partnered with renowned chefs to create more appetizing menus, while others offer premium meal options for passengers willing to pay extra. Additionally, advancements in food technology and packaging have allowed for better preservation and presentation of meals, enhancing the overall dining experience in-flight."
+          },
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 15,
+        "completion_tokens": 246,
+        "total_tokens": 261
+      }
+    },
+    "process_time": 6,
+    "model": "gpt-3.5-turbo",
+    "query_type": "PromptCompletion",
+    "temperature": 0.5,
+    "from_cache": false
+  }
+}
