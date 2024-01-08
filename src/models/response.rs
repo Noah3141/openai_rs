@@ -8,7 +8,7 @@ use {
 
 
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 pub struct ChatCompletionResponse {
     pub id: String,
     pub object: String,
@@ -61,7 +61,7 @@ impl ChatCompletionResponse {
 // }
 
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 pub struct ChatCompletionChoice {
     pub index: i64,
     pub message: ChatCompletionMessage,
@@ -116,7 +116,7 @@ pub struct JSONSchemaDefine {
     pub items: Option<Box<JSONSchemaDefine>>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum FinishReason {
     stop,

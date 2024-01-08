@@ -3,13 +3,13 @@ use serde::{Serialize, Deserialize};
 use crate::{GptModel, models::ChatCompletionResponse};
 
 pub trait Cacheable {
-    fn to_query_key(&self) -> String;
+    fn key(&self) -> String;
 }
 
 
 /// An individual Query, representing a prompt-completion event, and its metadata <br>
 /// A query can hold a Summary event for a pdf, in which case its query_type will be PdfCompletion, and its prompt field will be a stamp of the corresponding battery used to generate the summary. See `Battery`
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct ChatQuery {
     /// The prompt that was sent for chat completion if QueryType is chat completion, else this field is field with a stamp corresponding to the question battery that was used
     pub prompt: String,
@@ -33,7 +33,7 @@ impl ChatQuery {
 }
 
 impl Cacheable for ChatQuery {
-    fn to_query_key(&self) -> String {
+    fn key(&self) -> String {
         Self::key(&self.prompt)
     }
 }

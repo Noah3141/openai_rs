@@ -14,7 +14,7 @@ use super::{
 
 /// The type of request response that occured for this query. A prompt completion involved Chat Completion from a prompt, whereas a PDF summary is generated from PDF. <br>
 /// The key in the cache for a prompt completion is the prompt, whereas the key for a PdfCompletion is the pdf's filename, which should always match its storage name on disc.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub enum Query {
     ChatQuery(ChatQuery),
     TextQuery(TextQuery),
@@ -38,7 +38,7 @@ impl Query {
         }
     }
 
-    pub fn expect_as_prompt(self) -> ChatQuery {
+    pub fn expect_as_chat(self) -> ChatQuery {
         if let Query::ChatQuery(query) = self {query} else {panic!("Expected to be a ChatQuery {self:#?}")}
     }
     pub fn expect_as_text(self) -> TextQuery {
@@ -53,11 +53,11 @@ impl Query {
 
 
 impl Cacheable for Query {
-    fn to_query_key(&self) -> String {
+    fn key(&self) -> String {
         match self {
-            Query::ChatQuery(query) => query.to_query_key(),
-            Query::TextQuery(query) => query.to_query_key(),
-            Query::MetaQuery(query) => query.to_query_key(),
+            Query::ChatQuery(query) => query.key(),
+            Query::TextQuery(query) => query.key(),
+            Query::MetaQuery(query) => query.key(),
         }
     }
 }

@@ -4,7 +4,7 @@ use {
 
 
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum MessageRole {
     user,
@@ -13,7 +13,7 @@ pub enum MessageRole {
 }
 
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct ChatCompletionMessage {
     pub role: MessageRole,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -40,7 +40,7 @@ impl Default for ChatCompletionMessage {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 pub struct Usage {
     pub prompt_tokens: i32,
     pub completion_tokens: i32,
@@ -48,7 +48,7 @@ pub struct Usage {
 }
 
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct FunctionCall {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,

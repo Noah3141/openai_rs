@@ -6,7 +6,7 @@ use crate::{models::ChatCompletionResponse, GptModel, chat_query::Cacheable};
 /// Query intended for running on the outputs of previous queries
 
 /// A query can hold a Summary event for a pdf, in which case its query_type will be PdfCompletion, and its prompt field will be a stamp of the corresponding battery used to generate the summary. See `Battery`
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct MetaQuery {
     /// The prompt that was sent for chat completion if QueryType is chat completion, else this field is field with a stamp corresponding to the question battery that was used
     pub prompt: String,
@@ -30,7 +30,7 @@ impl MetaQuery {
 }
 
 impl Cacheable for MetaQuery {
-    fn to_query_key(&self) -> String {
+    fn key(&self) -> String {
         Self::key(&self.prompt)
     }
 }

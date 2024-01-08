@@ -1,32 +1,33 @@
 {
-  "what's the deal with airplane food?": {
-    "prompt": "What's the deal with airplane food?",
-    "cost": 0.051450003,
-    "response": {
-      "id": "chatcmpl-8e7QCx1M8JoUqkWCxzR0bDT9lgNtt",
-      "object": "chat.completion",
-      "created": 1704572340,
-      "model": "gpt-3.5-turbo-0613",
-      "choices": [
-        {
-          "index": 0,
-          "message": {
-            "role": "assistant",
-            "content": "Airplane food has long been a subject of jokes and criticism. There are a few reasons for this perception:\n\n1. Constraints of the environment: Airplane cabins are pressurized at a lower altitude, which affects our taste and smell receptors, making food seem less flavorful. The dry air and low humidity also affect our perception of taste, making food taste blander.\n\n2. Logistics and preparation: Preparing food for thousands of passengers on a tight schedule can be challenging. Airline meals are often pre-cooked, frozen, and reheated onboard, which can affect the quality and taste. The reheating process can lead to texture changes and loss of moisture in the food.\n\n3. Cost considerations: Airlines often face budget constraints and aim to minimize costs. This can result in compromises on the quality and variety of ingredients used in meals.\n\nHowever, it's worth noting that in recent years, many airlines have made efforts to improve the quality of their onboard meals. Some carriers have partnered with renowned chefs to create more appetizing menus, while others offer premium meal options for passengers willing to pay extra. Additionally, advancements in food technology and packaging have allowed for better preservation and presentation of meals, enhancing the overall dining experience in-flight."
-          },
-          "finish_reason": "stop"
+  "Chat: What's the deal with airplane food?": {
+    "ChatQuery": {
+      "prompt": "What's the deal with airplane food?",
+      "cost": 0.051450003,
+      "response": {
+        "id": "chatcmpl-8edj36dL7NOu11kemC1JniG5Q5FPW",
+        "object": "chat.completion",
+        "created": 1704696517,
+        "model": "gpt-3.5-turbo-0613",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "Airplane food has long been a subject of jokes and complaints. There are a few reasons for this perception:\n\n1. Limited options: Airlines have to cater to a wide range of dietary restrictions and preferences, so they often provide meals that are relatively bland and universally acceptable. This can result in a lack of variety and flavor.\n\n2. Preparation challenges: Preparing food for consumption on an airplane poses unique challenges. The food needs to be prepared in advance, chilled or frozen, and reheated onboard. This process can affect the taste and texture of the food.\n\n3. Altitude and cabin pressure: The low humidity and reduced air pressure in the cabin can affect our sense of taste and smell, making food taste different or less enjoyable than it would on the ground.\n\n4. Cost-cutting measures: Airlines often face the challenge of providing meals within a tight budget. To keep costs low, they may opt for cheaper ingredients or pre-packaged meals, which can impact the quality and taste.\n\nHowever, it's worth noting that in recent years, some airlines have made efforts to improve their in-flight dining experience. They have introduced celebrity chefs, gourmet options, and even partnerships with renowned restaurants to offer more appealing and higher-quality meals."
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 15,
+          "completion_tokens": 246,
+          "total_tokens": 261
         }
-      ],
-      "usage": {
-        "prompt_tokens": 15,
-        "completion_tokens": 246,
-        "total_tokens": 261
-      }
-    },
-    "process_time": 6,
-    "model": "gpt-3.5-turbo",
-    "query_type": "PromptCompletion",
-    "temperature": 0.5,
-    "from_cache": false
+      },
+      "process_time": 5,
+      "model": "gpt-3.5-turbo",
+      "temperature": 0.5,
+      "from_cache": true
+    }
   }
 }

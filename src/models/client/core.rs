@@ -99,13 +99,13 @@ impl OpenAIAccount {
             Ok(f) => {
                 let reader = io::BufReader::new(f);
                 let entries: HashMap<String, Query> = serde_json::from_reader(reader).unwrap_or_else(|e| { 
-                    if let serde_json::error::Category::Eof = e.classify() { HashMap::new() } else { println!("🗳️  Initializing client with blank cache due to:  ❌  {e}"); HashMap::new() }  
+                    if let serde_json::error::Category::Eof = e.classify() { HashMap::new() } else { println!("🗳️ Initializing client with blank cache due to:  ❌  {e}"); HashMap::new() }  
                 });
                 let cache = Cache {
                     entries,
                     filepath: cache_filepath
                 };
-                println!("🗳️  Cache read from: {}", &cache.filepath.display());
+                println!("🗳️ Cache read from: {}", &cache.filepath.display());
                 cache
             },
             Err(_) => { // HashMap<String, Query>
@@ -114,15 +114,15 @@ impl OpenAIAccount {
                     filepath: cache_filepath,
                     ..Default::default()
                 };
-                println!("🗳️  Empty Cache created at: {}", blank_cache.filepath.display());
+                println!("🗳️ Empty Cache created at: {}", blank_cache.filepath.display());
                 blank_cache
             },
         };
 
         let _graveyard = std::fs::OpenOptions::new().create(true).truncate(true).write(true).open("graveyard.json").expect("access to graveyard file");
-        println!("🪦  Graveyard backups cleared.");
+        println!("🪦 Graveyard backups cleared.");
 
-        println!("🌡️  Model initialized at temperature {temperature}");
+        println!("🌡️ Model initialized at temperature {temperature}");
         Ok(OpenAIAccount {
             bill,
             cache,

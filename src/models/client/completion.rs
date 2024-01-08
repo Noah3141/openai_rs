@@ -16,9 +16,8 @@ use crate::{
 
 
 impl OpenAIAccount {
-        /// Sends the prompt as the first message, and returns the chat completion response.
+    /// Sends the prompt as the first message, and returns the chat completion response.
     /// <br> Checks cache for presence of prompt, and returns the cache value if present instead of repeating request.
-    /// <br> Inputting a model will use that model, otherwise `None` will default to the model used in the .new() initiator.
     pub async fn get_completion(&mut self, prompt: &str) -> Result<ChatQuery, Status> {
 
         let model = self.model;

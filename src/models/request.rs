@@ -7,7 +7,7 @@ use {
     std::collections::HashMap
 };
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, PartialEq)]
 pub struct ChatCompletionRequest {
     pub model: GptModel,
     pub messages: Vec<ChatCompletionMessage>,
@@ -22,15 +22,15 @@ pub struct ChatCompletionRequest {
 impl Default for ChatCompletionRequest {
     /// Applies:
     /// ```
-    /// use openai_rs::models::{request::ChatCompletionRequest, gpt_models::GptModel}
+    /// use openai_rs::models::{request::ChatCompletionRequest, gpt_models::GptModel};
     /// 
-    /// let default = ChatCompletionRequest { ..Default.default() };
+    /// let default = ChatCompletionRequest { ..Default::default() };
     /// 
     /// assert_eq!(default.function_call, None);
     /// assert_eq!(default.functions, None);
-    /// assert_eq!(default.model, GptModel::Gpt35Turbo)
-    /// assert_eq!(default.temperature, None),
-    /// assert_eq!(default.messages, vec![]),
+    /// assert_eq!(default.model, GptModel::Gpt35Turbo);
+    /// assert_eq!(default.temperature, None);
+    /// assert_eq!(default.messages, vec![]);
     /// ```
     fn default() -> Self {
         Self {
@@ -50,7 +50,7 @@ pub struct ChatCompletionChoice {
     pub finish_reason: FinishReason,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Function {
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -59,7 +59,7 @@ pub struct Function {
     pub parameters: Option<FunctionParameters>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum JSONSchemaType {
     Object,
@@ -70,7 +70,7 @@ pub enum JSONSchemaType {
     Boolean,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct JSONSchemaDefine {
     #[serde(rename = "type")]
     pub schema_type: Option<JSONSchemaType>,
@@ -86,7 +86,7 @@ pub struct JSONSchemaDefine {
     pub items: Option<Box<JSONSchemaDefine>>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct FunctionParameters {
     #[serde(rename = "type")]
     pub schema_type: JSONSchemaType,

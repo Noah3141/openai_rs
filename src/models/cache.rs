@@ -28,8 +28,9 @@ impl Cache {
     /// Resets both the cache file and in-memory cache to empty
     pub fn clear(&mut self) {
         self.entries.clear();
-        match fs::File::create(&self.filepath) { Ok(_)=>(), Err(e)=>{println!("\nclear() had trouble initializing a new blank cache file at '{}' : \n❌  {}", self.filepath.display(), e)}};
-        println!("🗳️  Cache cleared at: {}", self.filepath.display());
+        let cache_file = match fs::OpenOptions::new().create(true).truncate(true).write(true).open(&self.filepath) {Ok(f)=>f, Err(e)=>panic!("🗳️  clear() had trouble initializing a new blank cache file at '{}' : \n❌  {}", self.filepath.display(), e)};
+        serde_json::to_writer_pretty(&cache_file, &self.entries).expect("Serialization of cache to cache file");
+        println!("🗳️ Cache cleared at: {}", self.filepath.display());
     }
 
     pub fn remove(&mut self, cache_key: String) -> Option<(String, Query)> {
@@ -50,7 +51,7 @@ impl Cache {
 
     pub(super) fn insert(&mut self, query: &Query) -> () {
 
-        let cache_key = query.to_query_key();
+        let cache_key = query.key();
 
         match self.entries.insert(cache_key, query.clone()) {None => (), Some(query)=> { 
             let graveyard = std::fs::OpenOptions::new().create(true).append(true).open("graveyard.json").expect("access to graveyard file");
@@ -66,7 +67,7 @@ impl Cache {
 
     pub(super) fn insert_many(&mut self, queries: Vec<&Query>, overwrite: bool) -> () {
         for query in queries {
-            let query_key = query.to_query_key();
+            let query_key = query.key();
             match overwrite {
                 true => {
                     match self.entries.insert(query_key, query.clone()) {None => (), Some(query) => { 

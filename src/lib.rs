@@ -21,17 +21,18 @@ mod basic {
     use crate::OpenAIAccount;
     use crate::GptModel;
     use crate::Query;
+    use crate::chat_query::Cacheable;
 
-    #[test]
-    fn initializes() {
-        let client = OpenAIAccount::new(GptModel::Gpt35Turbo, 0.5, None, None);
+    #[tokio::test]
+    async fn initializes() {
+        let client = OpenAIAccount::new(GptModel::Gpt35Turbo, 0.5, false, None, None).await.unwrap();
     }
 
     #[tokio::test]
     async fn manual_prompt() {
-        let mut client = OpenAIAccount::new(GptModel::Gpt35Turbo, 0.5, None, None);
+        let mut client = OpenAIAccount::new(GptModel::Gpt35Turbo, 0.5, false, None, None).await.unwrap();
         
-        let res = client.get_completion(&"What's the deal with airplane food?".to_string()).await;
+        let res = client.get_completion("What's the deal with airplane food?").await;
         let query = res.expect("manual_prompt");
 
         dbg!("{:#?}", query);
@@ -41,16 +42,14 @@ mod basic {
 
     #[tokio::test]
     async fn caching_retrieves_cache_when_present() {
-        let mut client = OpenAIAccount::new(GptModel::Gpt35Turbo, 0.5, None, None);
+        let mut client = OpenAIAccount::new(GptModel::Gpt35Turbo, 0.5, false, None, None).await.unwrap();
         
-        let prompt = "What's the deal with airplane food?".to_string();
+        let prompt = "What's the deal with airplane food?";
 
-        let res = client.get_completion(&prompt).await;
+        let res = client.get_completion(prompt).await;
         let query = res.expect("manual_prompt");
 
-        dbg!("{:#?}", query);
-
-        let res = client.get_completion(&prompt).await;
+        let res = client.get_completion(prompt).await;
         let requery = res.expect("manual_prompt");
 
         assert_eq!(requery.from_cache, true)
@@ -59,10 +58,36 @@ mod basic {
 
 
     #[tokio::test]
-    async fn database_behavior() {
-        let mut client = OpenAIAccount::new(GptModel::Gpt35Turbo, 0.5, None, None);
+    async fn database_insert_and_read() {
+        let mut client = OpenAIAccount::new(GptModel::Gpt35Turbo, 0.5, true, None, None).await.unwrap();
+        client.cache.clear();
+        let prompt = "What's the deal with airplane food?";
+        let query = client.get_completion(prompt).await.unwrap();
         
-        let prompt = "What's the deal with airplane food?".to_string();
+        assert!(!query.from_cache); // Not from cache
+        assert!(client.cache.entries.get(&query.key()).is_some()); // But got put in
+        
+        let res = client.db.insert_query(query.key(), &client.cache).await.unwrap(); // I now put into DB
+
+        client.cache.clear(); // Wipe cache
+        
+        assert!(client.cache.entries.get(&query.key()).is_none()); // Find nothing in cache at its key
+        assert!(client.db.get_chat_query(query.key()).await.is_some()); // But find it in the db at its key
+
+        let res = client.db.read_all_to_cache(&mut client.cache, false).await; // I take db and put to cache
+
+        assert!(res.unwrap().get(&query.key()).is_none()); // Old state should lack the db read
+        
+        assert_eq!(
+            client.cache.entries.get(&query.key()).unwrap().to_owned().expect_as_chat().process_time,
+            Query::ChatQuery(query.clone()).expect_as_chat().process_time, 
+        );
+        
+        assert_eq!(
+            client.cache.entries.get(&query.key()).unwrap().to_owned().expect_as_chat().response.id, // And the cache at that key is the SAME THING
+            Query::ChatQuery(query).expect_as_chat().response.id, // as the old query
+        )
+
 
     }
 

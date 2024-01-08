@@ -3,7 +3,7 @@ use {
     serde::{Serialize,Deserialize},
 };
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug, Deserialize)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum GptModel {
     Gpt35Turbo,
     Gpt35Turbo16k,
@@ -14,6 +14,35 @@ pub enum GptModel {
     Gpt432k0314,
     Gpt40613,
 }
+
+use serde::{Deserializer, de};
+
+impl<'de> Deserialize<'de> for GptModel {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct GptModelVisitor;
+
+        impl<'de> de::Visitor<'de> for GptModelVisitor {
+            type Value = GptModel;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a string representing a GptModel variant")
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                Ok(GptModel::from_str(value))
+            }
+        }
+
+        deserializer.deserialize_str(GptModelVisitor)
+    }
+}
+
 
 impl Serialize for GptModel {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

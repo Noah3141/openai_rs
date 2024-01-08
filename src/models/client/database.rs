@@ -40,17 +40,17 @@ impl DbMethods {
 
     pub(super) async fn try_init() -> Result<DatabaseConnection, Status> {
         let key = dotenvy::var("DATABASE_URL").map_err(|e| {
-            println!("🗄️  No 'DATABASE_URL' environment variable found. Starting without DB...");
+            println!("🗄️ No 'DATABASE_URL' environment variable found. Starting without DB...");
             Status::Error(e.to_string())
         })?;
         Database::connect(key).await.map_err(|e| {
-            println!("🗄️  Failed to connect to database! ❌");
+            println!("🗄️ Failed to connect to database! ❌");
             Status::Error(e.to_string())
         })
     }
 
     pub async fn insert_cache(&self, cache: &Cache) -> std::result::Result<(), Box<dyn Error>> {
-        println!("🗄️  Saving cache to database...");
+        println!("🗄️ Saving cache to database...");
         
         let mut overwritten = false;
         let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL")?).await?;
@@ -68,7 +68,7 @@ impl DbMethods {
 
                     if let Some(model) = extant_at_id {
                         ChatCompletions::delete_by_id(model.rid).exec(&db).await.expect("success of deletion by id during insert_cache()");
-                        println!("🗄️  Model overwritten at query key hash: {query_key_hash}"); 
+                        println!("🗄️ Model overwritten at query key hash: {query_key_hash}"); 
                         overwritten = true;
                         let graveyard = std::fs::OpenOptions::new().create(true).append(true).open("graveyard.json").expect("access to graveyard file");
                         serde_json::to_writer_pretty(graveyard, &model).expect("Serialization of an overwritten model to the graveyard");
@@ -96,7 +96,7 @@ impl DbMethods {
 
                     if let Some(model) = extant_at_id {
                         TextCompletions::delete_by_id(model.rid).exec(&db).await.expect("success of deletion by id during insert_cache()");
-                        println!("🗄️  Model overwritten at query key hash: {query_key_hash}"); 
+                        println!("🗄️ Model overwritten at query key hash: {query_key_hash}"); 
                         overwritten = true;
                         let graveyard = std::fs::OpenOptions::new().create(true).append(true).open("graveyard.json").expect("access to graveyard file");
                         serde_json::to_writer_pretty(graveyard, &model).expect("Serialization of an overwritten model to the graveyard");
@@ -124,7 +124,7 @@ impl DbMethods {
 
                     if let Some(model) = extant_at_id {
                         MetaCompletions::delete_by_id(model.rid).exec(&db).await.expect("success of deletion by id during insert_cache()");
-                        println!("🗄️  Model overwritten at query key hash: {query_key_hash}"); 
+                        println!("🗄️ Model overwritten at query key hash: {query_key_hash}"); 
                         overwritten = true;
                         let graveyard = std::fs::OpenOptions::new().create(true).append(true).open("graveyard.json").expect("access to graveyard file");
                         serde_json::to_writer_pretty(graveyard, &model).expect("Serialization of an overwritten model to the graveyard");
@@ -155,14 +155,14 @@ impl DbMethods {
         let _meta_res = MetaCompletions::insert_many(meta_models).exec(&db).await?;
 
         if overwritten {println!("🪦  Any overwritten models can be recovered in graveyard file.")};
-        println!("🗄️  Cache saved to database.");
+        println!("🗄️ Cache saved to database.");
         Ok(())
     }
 
     /// Provide the `cache_key` of an cached query, to insert that query into the DB. (The cached entry is not modified)
-    pub async fn insert_query(&self, cache_key: String, cache: &Cache) -> Option<i32> {
-        let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL").expect("database env var")).await.expect("database connection");
-        let query = match cache.entries.get(&cache_key) {Some(s) => s, None => return None};
+    pub async fn insert_query(&self, cache_key: String, cache: &Cache) -> Result<i32, Status> {
+        
+        let query = match cache.entries.get(&cache_key) {Some(s) => s, None => return Err(Status::NotFoundError)};
         
         match query {
             Query::ChatQuery(query) => {
@@ -182,10 +182,10 @@ impl DbMethods {
                     rid: ActiveValue::NotSet
                 };
         
-                let res = ChatCompletions::insert(model).exec(&db).await.expect("insertion of ActiveModel to db during .insert_query()");
+                let res = ChatCompletions::insert(model).exec(self.conn.as_ref().unwrap()).await.expect("insertion of ActiveModel to db during .insert_query()");
         
-                println!("🗄️  Inserted into database query \"{key}\"", key = cache_key);
-                Some(res.last_insert_id)
+                println!("🗄️ Inserted into database query \"{key}\"", key = cache_key);
+                Ok(res.last_insert_id)
             },
             Query::TextQuery(query) => {
                 let model = ActiveTextQueryModel { 
@@ -205,10 +205,10 @@ impl DbMethods {
                     rid: ActiveValue::NotSet
                 };
         
-                let res = TextCompletions::insert(model).exec(&db).await.expect("insertion of ActiveModel to db during .insert_query()");
+                let res = TextCompletions::insert(model).exec(self.conn.as_ref().unwrap()).await.expect("insertion of ActiveModel to db during .insert_query()");
         
-                println!("🗄️  Inserted into database query \"{key}\"", key = cache_key);
-                Some(res.last_insert_id)
+                println!("🗄️ Inserted into database query \"{key}\"", key = cache_key);
+                Ok(res.last_insert_id)
             },
             Query::MetaQuery(query) => {
                 let model = ActiveMetaQueryModel { 
@@ -227,19 +227,22 @@ impl DbMethods {
                     rid: ActiveValue::NotSet
                 };
 
-                let res = MetaCompletions::insert(model).exec(&db).await.expect("insertion of ActiveModel to db during .insert_query()");
+                let res = MetaCompletions::insert(model).exec(self.conn.as_ref().unwrap()).await.expect("insertion of ActiveModel to db during .insert_query()");
 
-                println!("🗄️  Inserted into database query \"{key}\"", key = cache_key);
-                Some(res.last_insert_id)
+                println!("🗄️ Inserted into database query \"{key}\"", key = cache_key);
+                Ok(res.last_insert_id)
             },
         }
         
     }
 
 
-    /// Find all in db, convert models to queries, insert queries into the local cache according to query_key, overwriting if `overwrite` is `true` or skipping if not, then overwrite the cache file with the new state of the cache.  Returns the previous state of the cache, before db addition.
+    /// Find all in db, convert models to queries, insert queries into the local cache according to query_key, overwriting if `overwrite` is `true` or skipping if not, 
+    /// then overwrite the cache file with the new state of the cache.  Returns the previous state of the cache, before db addition.
+    /// 
+    /// Pass in your `OpenAIAccount`'s cache
     pub async fn read_all_to_cache(&mut self, cache: &mut Cache, overwrite: bool) -> Result<HashMap<String,Query> , Box<dyn Error> > {
-        println!("🗄️  Reading database into cache...");
+        println!("🗄️ Reading database into cache...");
         let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL")?).await?;
         let previous_state = cache.entries.clone();
         
@@ -263,7 +266,7 @@ impl DbMethods {
         // let cache_file = match fs::OpenOptions::new().create(true).write(true).open(&cache.filepath) {Ok(f)=>f, Err(e)=>panic!("Could not cache query at {}, due to error:  ❌  {}", cache.filepath.display(), e)};
         // serde_json::to_writer_pretty(&cache_file, &cache).expect("Serialization of cache to cache file during read_to_cache");
 
-        println!("🗄️  Database added to cache.");
+        println!("🗄️ Database added to cache.");
         Ok(previous_state)
     }
 
@@ -272,30 +275,30 @@ impl DbMethods {
         model.map(|q| q.to_query())
     }
     pub async fn get_chat_query(&self, cache_key: String) -> Option<ChatQuery> {
-        let model = ChatCompletions::find().filter(TextQueryColumn::QueryKey.eq(cache_key)).one(self.conn.as_ref().unwrap()).await.expect("Database .find() call response success");
+        let model = ChatCompletions::find().filter(ChatQueryColumn::QueryKey.eq(cache_key)).one(self.conn.as_ref().unwrap()).await.expect("Database .find() call response success");
         model.map(|q| q.to_query())
     }
     pub async fn get_meta_query(&self, cache_key: String) -> Option<MetaQuery> {
-        let model = MetaCompletions::find().filter(TextQueryColumn::QueryKey.eq(cache_key)).one(self.conn.as_ref().unwrap()).await.expect("Database .find() call response success");
+        let model = MetaCompletions::find().filter(MetaQueryColumn::QueryKey.eq(cache_key)).one(self.conn.as_ref().unwrap()).await.expect("Database .find() call response success");
         model.map(|q| q.to_query())
     }
 
     pub async fn delete_text_query_by_id(&self, id: i32) -> Result<(), Box<dyn Error>> {
-        println!("🗄️  Deleting text query by id: {id}");
+        println!("🗄️ Deleting text query by id: {id}");
         let _res = TextCompletions::delete( ActiveTextQueryModel { rid: Set(id), ..Default::default() } )
             .exec(self.conn.as_ref().unwrap())
             .await?;
         Ok(())
     }
     pub async fn delete_chat_query_by_id(&self, id: i32) -> Result<(), Box<dyn Error>> {
-        println!("🗄️  Deleting text query by id: {id}");
+        println!("🗄️ Deleting text query by id: {id}");
         let _res = ChatCompletions::delete( ActiveChatQueryModel { rid: Set(id), ..Default::default() } )
             .exec(self.conn.as_ref().unwrap())
             .await?;
         Ok(())
     }
     pub async fn delete_meta_query_by_id(&self, id: i32) -> Result<(), Box<dyn Error>> {
-        println!("🗄️  Deleting text query by id: {id}");
+        println!("🗄️ Deleting text query by id: {id}");
         let _res = MetaCompletions::delete( ActiveMetaQueryModel { rid: Set(id), ..Default::default() } )
             .exec(self.conn.as_ref().unwrap())
             .await?;
@@ -303,45 +306,45 @@ impl DbMethods {
     }
 
     pub async fn delete_all(&self) -> Result<(), Box<dyn Error>> {
-        println!("🗄️  Delete database requested...");
+        println!("🗄️ Delete database requested...");
         
         let mut line = String::new();
-        println!("🗄️  Press Enter to continue...");
+        println!("🗄️ Press Enter to continue...");
         let _input = std::io::stdin().read_line(&mut line).expect("Failed to read line");
 
         let _res = ChatCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
         let _res = TextCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
         let _res = MetaCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
 
-        println!("🗄️  Database cleared.\n");
+        println!("🗄️ Database cleared.\n");
         Ok(())
     }
 
     /// This will NOT ask for confirmation.
     pub async fn delete_chat_queries(&self) -> Result<(), Box<dyn Error>> {
-        println!("🗄️  Delete chat queries requested...");
+        println!("🗄️ Delete chat queries requested...");
         let _res = ChatCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
-        println!("🗄️  Chat queries cleared.\n");
+        println!("🗄️ Chat queries cleared.\n");
         Ok(())
     }
     /// This will NOT ask for confirmation.
     pub async fn delete_text_queries(&self) -> Result<(), Box<dyn Error>> {
-        println!("🗄️  Delete text queries requested...");
+        println!("🗄️ Delete text queries requested...");
         let _res = TextCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
-        println!("🗄️  Text queries cleared.\n");
+        println!("🗄️ Text queries cleared.\n");
         Ok(())
     }
     /// This will NOT ask for confirmation.
     pub async fn delete_meta_queries(&self) -> Result<(), Box<dyn Error>> {
-        println!("🗄️  Delete meta queries requested...");
+        println!("🗄️ Delete meta queries requested...");
         let _res = MetaCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
-        println!("🗄️  Meta queries cleared.\n");
+        println!("🗄️ Meta queries cleared.\n");
         Ok(())
     }
 
     /// Returns a fresh read of the database
     pub async fn read_all(&self) -> Result< HashMap<String,Query> , Box<dyn Error> > {
-        println!("🗄️  Reading all from database...");
+        println!("🗄️ Reading all from database...");
 
         let mut cache: HashMap<String, Query> = HashMap::new();
         let chat_models = ChatCompletions::find().all(self.conn.as_ref().unwrap()).await?;
