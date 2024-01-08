@@ -1,8 +1,7 @@
 use std::path::PathBuf;
 use serde::{Serialize, Deserialize};
-use crate::{models::ChatCompletionResponse, GptModel};
+use crate::{models::ChatCompletionResponse, GptModel, chat_query::Cacheable};
 
-use super::chat_query::Cacheable;
 
 /// Query intended for running on the outputs of previous queries
 

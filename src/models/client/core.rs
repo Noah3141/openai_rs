@@ -4,6 +4,8 @@ use std::{
     collections::HashMap, 
     path::PathBuf
 };
+use sea_orm::{DatabaseConnection, Database};
+
 use crate::{
     models::{
         client::database::DbMethods,
@@ -41,7 +43,7 @@ impl Default for OpenAIAccount {
         OpenAIAccount {
             api_key: dotenvy::var("CHATGPT_API_KEY").unwrap().to_string(),
             temperature: 0.0,
-            db: DbMethods,
+            db: DbMethods { conn: None },
             cache: Cache { ..Default::default() },
             bill: Bill { ..Default::default() },
             model: GptModel::Gpt35Turbo16k,
@@ -50,17 +52,29 @@ impl Default for OpenAIAccount {
 }
 
 impl OpenAIAccount {
-    pub fn new(
+    pub async fn new(
         model: GptModel, 
         temperature: f32, 
+        database: bool,
         bill_filepath: Option<PathBuf>, 
-        cache_filepath: Option<PathBuf> ) -> OpenAIAccount {
+        cache_filepath: Option<PathBuf> ) -> Result<OpenAIAccount, Status> {
 
         let bill_filepath = bill_filepath.unwrap_or( "./bill.json".into() );
         let cache_filepath = cache_filepath.unwrap_or( "./cache.json".into() );
 
         let api_key = dotenvy::var("CHATGPT_API_KEY").expect("CHATGPT_API_KEY environment variable").to_string();
         
+        let mut res = Ok(());
+        let db = DbMethods::try_init().await.map_err(|e| { res = Err(e) }).ok();
+
+        match db {
+            None => match database {
+                true => return Err(res.unwrap_err()),
+                false => (),
+            },
+            _ => ()
+        }
+
         let bill = match fs::File::open(&bill_filepath) {
             Ok(f) => {
                 let reader = io::BufReader::new(f);
@@ -109,14 +123,17 @@ impl OpenAIAccount {
         println!("🪦  Graveyard backups cleared.");
 
         println!("🌡️  Model initialized at temperature {temperature}");
-        OpenAIAccount {
+        Ok(OpenAIAccount {
             bill,
             cache,
             model,
             api_key,
             temperature,
+            db: DbMethods {
+                conn: db
+            },
             ..Default::default()
-        }
+        })
     }
 
     

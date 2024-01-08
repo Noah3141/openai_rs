@@ -1,12 +1,15 @@
 use chrono::Utc;
 use std::fs;
-use sea_orm::{DatabaseConnection, Database, EntityTrait, QueryFilter, ColumnTrait, ActiveValue};
+use sea_orm::{DatabaseConnection, Database, EntityTrait, QueryFilter, ColumnTrait, ActiveValue, Set};
 use crate::{
     models::{
         db::{
-            chat_completions::ActiveModel as ChatQueryModel, 
-            text_completions::ActiveModel as TextQueryModel,
-            meta_completions::ActiveModel as MetaQueryModel,
+            chat_completions::ActiveModel as ActiveChatQueryModel, 
+            text_completions::ActiveModel as ActiveTextQueryModel,
+            meta_completions::ActiveModel as ActiveMetaQueryModel,
+            chat_completions::Model as ChatQueryModel, 
+            text_completions::Model as TextQueryModel,
+            meta_completions::Model as MetaQueryModel,
             chat_completions::Column as ChatQueryColumn, 
             text_completions::Column as TextQueryColumn,
             meta_completions::Column as MetaQueryColumn,
@@ -25,11 +28,26 @@ use crate::{
 };
 use std::{error::Error, collections::HashMap};
 
+use super::core::Status;
+
 #[derive(Debug)]
-pub struct DbMethods;
+pub struct DbMethods {
+    pub(super) conn: Option<DatabaseConnection>
+}
 
 /// Methods for coordinating the current cache state and the DB
 impl DbMethods {
+
+    pub(super) async fn try_init() -> Result<DatabaseConnection, Status> {
+        let key = dotenvy::var("DATABASE_URL").map_err(|e| {
+            println!("🗄️  No 'DATABASE_URL' environment variable found. Starting without DB...");
+            Status::Error(e.to_string())
+        })?;
+        Database::connect(key).await.map_err(|e| {
+            println!("🗄️  Failed to connect to database! ❌");
+            Status::Error(e.to_string())
+        })
+    }
 
     pub async fn insert_cache(&self, cache: &Cache) -> std::result::Result<(), Box<dyn Error>> {
         println!("🗄️  Saving cache to database...");
@@ -37,9 +55,9 @@ impl DbMethods {
         let mut overwritten = false;
         let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL")?).await?;
 
-        let mut chat_models: Vec<ChatQueryModel> = vec![]; // We will build up lists and then do a single SQL insert for each
-        let mut text_models: Vec<TextQueryModel> = vec![];
-        let mut meta_models: Vec<MetaQueryModel> = vec![];
+        let mut chat_models: Vec<ActiveChatQueryModel> = vec![]; // We will build up lists and then do a single SQL insert for each
+        let mut text_models: Vec<ActiveTextQueryModel> = vec![];
+        let mut meta_models: Vec<ActiveMetaQueryModel> = vec![];
 
         for (cache_key, query) in &cache.entries {
             let query_key_hash = calculate_hash(cache_key);
@@ -55,7 +73,7 @@ impl DbMethods {
                         let graveyard = std::fs::OpenOptions::new().create(true).append(true).open("graveyard.json").expect("access to graveyard file");
                         serde_json::to_writer_pretty(graveyard, &model).expect("Serialization of an overwritten model to the graveyard");
                     }
-                    let model = ChatQueryModel { 
+                    let model = ActiveChatQueryModel { 
                         timestamp: ActiveValue::Set(Utc::now().naive_local()), 
                         model: ActiveValue::Set(query.model.to_string()), 
                         temperature: ActiveValue::Set(query.temperature as f64), 
@@ -83,7 +101,7 @@ impl DbMethods {
                         let graveyard = std::fs::OpenOptions::new().create(true).append(true).open("graveyard.json").expect("access to graveyard file");
                         serde_json::to_writer_pretty(graveyard, &model).expect("Serialization of an overwritten model to the graveyard");
                     }
-                    let model = TextQueryModel { 
+                    let model = ActiveTextQueryModel { 
                         timestamp: ActiveValue::Set(Utc::now().naive_local()), 
                         model: ActiveValue::Set(query.model.to_string()), 
                         temperature: ActiveValue::Set(query.temperature as f64), 
@@ -111,7 +129,7 @@ impl DbMethods {
                         let graveyard = std::fs::OpenOptions::new().create(true).append(true).open("graveyard.json").expect("access to graveyard file");
                         serde_json::to_writer_pretty(graveyard, &model).expect("Serialization of an overwritten model to the graveyard");
                     }
-                    let model = MetaQueryModel { 
+                    let model = ActiveMetaQueryModel { 
                         timestamp: ActiveValue::Set(Utc::now().naive_local()), 
                         model: ActiveValue::Set(query.model.to_string()), 
                         temperature: ActiveValue::Set(query.temperature as f64), 
@@ -148,7 +166,7 @@ impl DbMethods {
         
         match query {
             Query::ChatQuery(query) => {
-                let model = ChatQueryModel { 
+                let model = ActiveChatQueryModel { 
                     timestamp: ActiveValue::Set(Utc::now().naive_local()), 
                     model: ActiveValue::Set(query.model.to_string()), 
                     temperature: ActiveValue::Set(query.temperature as f64), 
@@ -170,7 +188,7 @@ impl DbMethods {
                 Some(res.last_insert_id)
             },
             Query::TextQuery(query) => {
-                let model = TextQueryModel { 
+                let model = ActiveTextQueryModel { 
                     timestamp: ActiveValue::Set(Utc::now().naive_local()), 
                     model: ActiveValue::Set(query.model.to_string()), 
                     temperature: ActiveValue::Set(query.temperature as f64), 
@@ -193,7 +211,7 @@ impl DbMethods {
                 Some(res.last_insert_id)
             },
             Query::MetaQuery(query) => {
-                let model = MetaQueryModel { 
+                let model = ActiveMetaQueryModel { 
                     timestamp: ActiveValue::Set(Utc::now().naive_local()), 
                     model: ActiveValue::Set(query.model.to_string()), 
                     temperature: ActiveValue::Set(query.temperature as f64), 
@@ -249,55 +267,95 @@ impl DbMethods {
         Ok(previous_state)
     }
 
-    pub async fn get_text_query(&self, cache_key: String) -> Option<TextQueryModel> {
-        let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL").expect("Database env var")).await.expect("Database connection");
-        let model = TextCompletions::find().filter(TextQueryColumn::QueryKey.eq(cache_key)).one(&db).await.expect("Database .find() call response success");
-        model
+    pub async fn get_text_query(&self, cache_key: String) -> Option<TextQuery> {
+        let model = TextCompletions::find().filter(TextQueryColumn::QueryKey.eq(cache_key)).one(self.conn.as_ref().unwrap()).await.expect("Database .find() call response success");
+        model.map(|q| q.to_query())
     }
-    pub async fn get_chat_query(&self, cache_key: String) -> Option<ChatQueryModel> {
-        let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL").expect("Database env var")).await.expect("Database connection");
-        let model = ChatCompletions::find().filter(TextQueryColumn::QueryKey.eq(cache_key)).one(&db).await.expect("Database .find() call response success");
-        model
+    pub async fn get_chat_query(&self, cache_key: String) -> Option<ChatQuery> {
+        let model = ChatCompletions::find().filter(TextQueryColumn::QueryKey.eq(cache_key)).one(self.conn.as_ref().unwrap()).await.expect("Database .find() call response success");
+        model.map(|q| q.to_query())
     }
-    pub async fn get_meta_query(&self, cache_key: String) -> Option<MetaQueryModel> {
-        let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL").expect("Database env var")).await.expect("Database connection");
-        let model = MetaCompletions::find().filter(TextQueryColumn::QueryKey.eq(cache_key)).one(&db).await.expect("Database .find() call response success");
-        model
-    }
-    pub async fn get_query(&self, cache_key: String) -> Option<Query> {
-        let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL").expect("Database env var")).await.expect("Database connection");
-
+    pub async fn get_meta_query(&self, cache_key: String) -> Option<MetaQuery> {
+        let model = MetaCompletions::find().filter(TextQueryColumn::QueryKey.eq(cache_key)).one(self.conn.as_ref().unwrap()).await.expect("Database .find() call response success");
+        model.map(|q| q.to_query())
     }
 
-    pub async fn delete_one_by_id(&self, id: i32) -> Result<(), Box<dyn ErrorTrait>> {
-        println!("🗄️  Deleting by id: {id}");
-        let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL")?).await?;
-        let _res = QueryCache::delete_by_id(id).exec(&db).await?;
+    pub async fn delete_text_query_by_id(&self, id: i32) -> Result<(), Box<dyn Error>> {
+        println!("🗄️  Deleting text query by id: {id}");
+        let _res = TextCompletions::delete( ActiveTextQueryModel { rid: Set(id), ..Default::default() } )
+            .exec(self.conn.as_ref().unwrap())
+            .await?;
+        Ok(())
+    }
+    pub async fn delete_chat_query_by_id(&self, id: i32) -> Result<(), Box<dyn Error>> {
+        println!("🗄️  Deleting text query by id: {id}");
+        let _res = ChatCompletions::delete( ActiveChatQueryModel { rid: Set(id), ..Default::default() } )
+            .exec(self.conn.as_ref().unwrap())
+            .await?;
+        Ok(())
+    }
+    pub async fn delete_meta_query_by_id(&self, id: i32) -> Result<(), Box<dyn Error>> {
+        println!("🗄️  Deleting text query by id: {id}");
+        let _res = MetaCompletions::delete( ActiveMetaQueryModel { rid: Set(id), ..Default::default() } )
+            .exec(self.conn.as_ref().unwrap())
+            .await?;
         Ok(())
     }
 
-    pub async fn delete_all(&self) -> Result<(), Box<dyn ErrorTrait>> {
+    pub async fn delete_all(&self) -> Result<(), Box<dyn Error>> {
         println!("🗄️  Delete database requested...");
         
         let mut line = String::new();
         println!("🗄️  Press Enter to continue...");
         let _input = std::io::stdin().read_line(&mut line).expect("Failed to read line");
 
+        let _res = ChatCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
+        let _res = TextCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
+        let _res = MetaCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
 
-        let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL")?).await?;
-        let _res = QueryCache::delete_many().exec(&db).await?;
         println!("🗄️  Database cleared.\n");
         Ok(())
     }
 
-    pub async fn read_all(&self) -> Result< HashMap<String,Query> , Box<dyn ErrorTrait> > {
-        println!("🗄️  Read all from database requested...");
-        let db: DatabaseConnection = Database::connect(dotenvy::var("DATABASE_URL").expect("Database env var")).await.expect("Database connection");
+    /// This will NOT ask for confirmation.
+    pub async fn delete_chat_queries(&self) -> Result<(), Box<dyn Error>> {
+        println!("🗄️  Delete chat queries requested...");
+        let _res = ChatCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
+        println!("🗄️  Chat queries cleared.\n");
+        Ok(())
+    }
+    /// This will NOT ask for confirmation.
+    pub async fn delete_text_queries(&self) -> Result<(), Box<dyn Error>> {
+        println!("🗄️  Delete text queries requested...");
+        let _res = TextCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
+        println!("🗄️  Text queries cleared.\n");
+        Ok(())
+    }
+    /// This will NOT ask for confirmation.
+    pub async fn delete_meta_queries(&self) -> Result<(), Box<dyn Error>> {
+        println!("🗄️  Delete meta queries requested...");
+        let _res = MetaCompletions::delete_many().exec(self.conn.as_ref().unwrap()).await?;
+        println!("🗄️  Meta queries cleared.\n");
+        Ok(())
+    }
+
+    /// Returns a fresh read of the database
+    pub async fn read_all(&self) -> Result< HashMap<String,Query> , Box<dyn Error> > {
+        println!("🗄️  Reading all from database...");
 
         let mut cache: HashMap<String, Query> = HashMap::new();
-        let models = QueryCache::find().all(&db).await?;
-        for model in models {
-            cache.extend([ ( model.query_key.clone(), model.to_query())])
+        let chat_models = ChatCompletions::find().all(self.conn.as_ref().unwrap()).await?;
+        let text_models = TextCompletions::find().all(self.conn.as_ref().unwrap()).await?;
+        let meta_models = MetaCompletions::find().all(self.conn.as_ref().unwrap()).await?;
+        
+        for model in chat_models {
+            cache.extend([ ( model.query_key.clone(), Query::ChatQuery( model.to_query() ))])
+        }
+        for model in text_models {
+            cache.extend([ ( model.query_key.clone(), Query::TextQuery( model.to_query() ))])
+        }
+        for model in meta_models {
+            cache.extend([ ( model.query_key.clone(), Query::MetaQuery( model.to_query() ))])
         }
 
         Ok(cache)
