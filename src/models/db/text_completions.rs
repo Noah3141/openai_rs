@@ -15,7 +15,10 @@ pub struct Model {
     #[sea_orm(column_type = "Text")]
     pub prompt: String,
     #[sea_orm(column_type = "Text")]
+    pub document_title: String,
+    #[sea_orm(column_type = "Text")]
     pub query_key: String,
+    #[sea_orm(unique)]
     pub query_key_hash: String,
     pub prompt_tokens: i32,
     pub completion_tokens: i32,

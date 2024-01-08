@@ -4,7 +4,7 @@ pub mod cost_factors {
     use crate::models::req_and_res::Usage;
 
     /// Returns the cost in cents/1000 tokens for a given model
-    pub fn compute_cost(usage: &Usage, model: &GptModel) -> f32 {
+    pub fn compute_cost(usage: &Usage, model: &GptModel) -> f64 {
         
         let (prompt_cost_factor, completion_cost_factor) = match model {
             GptModel::Gpt35Turbo => (0.0015, 0.002), //4k
@@ -21,9 +21,9 @@ pub mod cost_factors {
         };
 
         {
-            ( usage.prompt_tokens as f32 * prompt_cost_factor / 1000.0) // cost per 1000 / 1000 = cost per 1 => cost per 1 * tokens = cost of tokens
+            ( usage.prompt_tokens as f64 * prompt_cost_factor / 1000.0) // cost per 1000 / 1000 = cost per 1 => cost per 1 * tokens = cost of tokens
             + 
-            ( usage.completion_tokens as f32 * completion_cost_factor / 1000.0 )
+            ( usage.completion_tokens as f64 * completion_cost_factor / 1000.0 )
         }
 
     }
@@ -45,8 +45,8 @@ pub mod model_strings {
     pub const GPT4_32K_0314: &str = "gpt-4-32k-0314";
 }
 
-
-
 pub mod pdf_path {
     pub const DEFAULT_PDF_DIR: &str = "./pdfs/";
 }
+
+pub const API_URL_V1: &str = "https://api.openai.com/v1";

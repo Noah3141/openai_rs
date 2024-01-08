@@ -8,6 +8,8 @@ pub mod query;
 pub mod db;
 pub mod hash;
 pub mod queries;
+pub mod client;
+pub mod cache;
 
 // Hoist up these structs into the "::models::{}" scope, out from their individual files (they are still available there too)
 pub use req_and_res::ChatCompletionMessage;
@@ -18,7 +20,7 @@ pub use bill::Bill;
 pub use queries::{
     meta_query::MetaQuery, 
     text_query::TextQuery, 
-    prompt_query::ChatQuery
+    chat_query::ChatQuery
 };
 pub use query::Query;
 pub use gpt_models::GptModel;

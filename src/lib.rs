@@ -1,8 +1,26 @@
+pub mod models;
+pub mod constants;
+
+pub use crate::{
+    models::{
+        client::{
+            core::{
+                OpenAIAccount
+            },
+        },
+        queries:: *,
+        GptModel,
+        Query,
+    }
+};
+
+
 #[cfg(test)]
 mod basic {
-    use crate::models::ChatCompletionRequest;
 
-    use super::*;
+    use crate::OpenAIAccount;
+    use crate::GptModel;
+    use crate::Query;
 
     #[test]
     fn initializes() {
@@ -18,6 +36,8 @@ mod basic {
 
         dbg!("{:#?}", query);
     }
+
+    fn initializes_at_provided_locations() {}
 
     #[tokio::test]
     async fn caching_retrieves_cache_when_present() {
@@ -44,19 +64,8 @@ mod basic {
         
         let prompt = "What's the deal with airplane food?".to_string();
 
-        client.apply_prompt_to_pdf(
-            "", &"", &""
-        );
     }
 
 
 }
 
-pub mod models;
-pub mod client;
-
-pub mod constants;
-
-pub use client::OpenAIAccount;
-pub use models::GptModel;
-pub use models::Query;

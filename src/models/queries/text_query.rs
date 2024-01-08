@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::{models::{ChatCompletionResponse}, GptModel};
 
-use super::prompt_query::Cacheable;
+use super::chat_query::Cacheable;
 
 /// A query can hold a Summary event for a pdf, in which case its query_type will be PdfCompletion, and its prompt field will be a stamp of the corresponding battery used to generate the summary. See `Battery`
 #[derive(Clone, Debug, Serialize, Deserialize)]
