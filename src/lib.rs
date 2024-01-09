@@ -91,6 +91,68 @@ mod basic {
 
     }
 
+    #[tokio::test]
+    async fn basic_pdf() {
+        let jsx_prompt = "
+        type Props = {
+            authors: string[]; // L. M. First
+            year: number;
+            title: string;
+            journal: string;
+            edition?: number;
+            articleNumber: number;
+            pages?: {
+                start: number;
+                end: number;
+            };
+            doiLink: string;
+        };
+        Extract the above information and return the following JSX tag:
+        <Citation {props} />
+        ";
+
+        let mut client = OpenAIAccount::new(GptModel::Gpt4, 0.2, false, None, None).await.expect("");
+
+        let res = client.apply_prompt_to_pdf("Is Higher Better", jsx_prompt, None)
+            .await
+            .unwrap();
+        
+
+    }
+
+
+    #[tokio::test]
+    async fn basic_parser() {
+        let jsx_prompt = "
+        Xi, C. H. E. N., Hao, C. H. E. N., LU, W. B., Zhang, M., Yuan, T. A. O., Wang, Q. C., ... & Zhang, W. B. (2023). Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention. Biomedical and Environmental Sciences, 36(4), 324-333
+
+        type Props = {
+            authors: string[]; // L. M. First
+            year: number;
+            title: string;
+            journal: string;
+            edition?: number;
+            articleNumber: number;
+            pages?: {
+                start: number;
+                end: number;
+            };
+            doiLink: string;
+        };  
+        Extract the above information and return the following JSX tag:
+        { {title}:   <Citation {...props} /> }
+        ";
+
+        let mut client = OpenAIAccount::new(GptModel::Gpt4, 0.2, false, None, None).await.expect("");
+
+        let res = client.get_completion(jsx_prompt)
+            .await
+            .unwrap();
+        
+        println!("{}", res.response.choices[0].message.content.as_ref().unwrap());
+
+    }
+
 
 }
 

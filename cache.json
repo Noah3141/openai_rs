@@ -1,33 +1,126 @@
 {
+  "Chat: \n        Xi, C. H. E. N., Hao, C. H. E. N., LU, W. B., Zhang, M., Yuan, T. A. O., Wang, Q. C., ... & Zhang, W. B. (2023). Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention. Biomedical and Environmental Sciences, 36(4), 324-333\n\n        type Props = {\n            authors: string[]; // L. M. First\n            year: number;\n            title: string;\n            journal: string;\n            edition?: number;\n            articleNumber: number;\n            pages?: {\n                start: number;\n                end: number;\n            };\n            doiLink: string;\n        };\n        Extract the above information and return the following JSX tag:\n        <Citation {props} />\n        ": {
+    "ChatQuery": {
+      "prompt": "\n        Xi, C. H. E. N., Hao, C. H. E. N., LU, W. B., Zhang, M., Yuan, T. A. O., Wang, Q. C., ... & Zhang, W. B. (2023). Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention. Biomedical and Environmental Sciences, 36(4), 324-333\n\n        type Props = {\n            authors: string[]; // L. M. First\n            year: number;\n            title: string;\n            journal: string;\n            edition?: number;\n            articleNumber: number;\n            pages?: {\n                start: number;\n                end: number;\n            };\n            doiLink: string;\n        };\n        Extract the above information and return the following JSX tag:\n        <Citation {props} />\n        ",
+      "cost": 1.4819999,
+      "response": {
+        "id": "chatcmpl-8exoqnHkNlvH8RAWpot91uumTYqUz",
+        "object": "chat.completion",
+        "created": 1704773756,
+        "model": "gpt-4-0613",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "<Citation \n    authors={[\"Xi, C. H. E. N.\", \"Hao, C. H. E. N.\", \"LU, W. B.\", \"Zhang, M.\", \"Yuan, T. A. O.\", \"Wang, Q. C.\", \"Zhang, W. B.\"]} \n    year={2023} \n    title={\"Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention\"} \n    journal={\"Biomedical and Environmental Sciences\"} \n    edition={36} \n    articleNumber={4} \n    pages={{start: 324, end: 333}} \n    doiLink={\"\"} \n/>"
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 194,
+          "completion_tokens": 150,
+          "total_tokens": 344
+        }
+      },
+      "process_time": 16,
+      "model": "gpt-4",
+      "temperature": 0.2,
+      "from_cache": false
+    }
+  },
+  "Chat: \n        Xi, C. H. E. N., Hao, C. H. E. N., LU, W. B., Zhang, M., Yuan, T. A. O., Wang, Q. C., ... & Zhang, W. B. (2023). Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention. Biomedical and Environmental Sciences, 36(4), 324-333\n\n        type Props = {\n            authors: string[]; // L. M. First\n            year: number;\n            title: string;\n            journal: string;\n            edition?: number;\n            articleNumber: number;\n            pages?: {\n                start: number;\n                end: number;\n            };\n            doiLink: string;\n        };  \n        Extract the above information and return the following JSX tag:\n        { {title}:   <Citation {...props} /> }\n        ": {
+    "ChatQuery": {
+      "prompt": "\n        Xi, C. H. E. N., Hao, C. H. E. N., LU, W. B., Zhang, M., Yuan, T. A. O., Wang, Q. C., ... & Zhang, W. B. (2023). Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention. Biomedical and Environmental Sciences, 36(4), 324-333\n\n        type Props = {\n            authors: string[]; // L. M. First\n            year: number;\n            title: string;\n            journal: string;\n            edition?: number;\n            articleNumber: number;\n            pages?: {\n                start: number;\n                end: number;\n            };\n            doiLink: string;\n        };  \n        Extract the above information and return the following JSX tag:\n        { {title}:   <Citation {...props} /> }\n        ",
+      "cost": 1.689,
+      "response": {
+        "id": "chatcmpl-8exyhyVuy0Z8tTQ9sGIeHPiIgNZ2i",
+        "object": "chat.completion",
+        "created": 1704774367,
+        "model": "gpt-4-0613",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{ \"Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention\": <Citation {...{\n    authors: [\"Xi, C. H. E. N.\", \"Hao, C. H. E. N.\", \"LU, W. B.\", \"Zhang, M.\", \"Yuan, T. A. O.\", \"Wang, Q. C.\", \"Zhang, W. B.\"],\n    year: 2023,\n    title: \"Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention\",\n    journal: \"Biomedical and Environmental Sciences\",\n    edition: 36,\n    articleNumber: 4,\n    pages: {\n        start: 324,\n        end: 333\n    },\n    doiLink: \"\"\n}} /> }"
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 201,
+          "completion_tokens": 181,
+          "total_tokens": 382
+        }
+      },
+      "process_time": 18,
+      "model": "gpt-4",
+      "temperature": 0.2,
+      "from_cache": false
+    }
+  },
   "Chat: What's the deal with airplane food?": {
     "ChatQuery": {
       "prompt": "What's the deal with airplane food?",
-      "cost": 0.051450003,
+      "cost": 0.06045,
       "response": {
-        "id": "chatcmpl-8edj36dL7NOu11kemC1JniG5Q5FPW",
+        "id": "chatcmpl-8exnLPVFK0JJcxycIici1DuKilzHX",
         "object": "chat.completion",
-        "created": 1704696517,
+        "created": 1704773663,
         "model": "gpt-3.5-turbo-0613",
         "choices": [
           {
             "index": 0,
             "message": {
               "role": "assistant",
-              "content": "Airplane food has long been a subject of jokes and complaints. There are a few reasons for this perception:\n\n1. Limited options: Airlines have to cater to a wide range of dietary restrictions and preferences, so they often provide meals that are relatively bland and universally acceptable. This can result in a lack of variety and flavor.\n\n2. Preparation challenges: Preparing food for consumption on an airplane poses unique challenges. The food needs to be prepared in advance, chilled or frozen, and reheated onboard. This process can affect the taste and texture of the food.\n\n3. Altitude and cabin pressure: The low humidity and reduced air pressure in the cabin can affect our sense of taste and smell, making food taste different or less enjoyable than it would on the ground.\n\n4. Cost-cutting measures: Airlines often face the challenge of providing meals within a tight budget. To keep costs low, they may opt for cheaper ingredients or pre-packaged meals, which can impact the quality and taste.\n\nHowever, it's worth noting that in recent years, some airlines have made efforts to improve their in-flight dining experience. They have introduced celebrity chefs, gourmet options, and even partnerships with renowned restaurants to offer more appealing and higher-quality meals."
+              "content": "Airplane food has been a subject of jokes and criticism for many years. There are a few reasons why airplane food has gained this reputation:\n\n1. Taste and quality: Due to the limitations of preparing and serving food in an airplane, the taste and quality of the food can often be subpar. The food is usually pre-cooked and reheated onboard, which can affect the taste and texture.\n\n2. Altitude and cabin pressure: The low humidity and reduced air pressure in the cabin can affect our taste buds, making food taste different or less flavorful than it would on the ground. This can contribute to the perception of airplane food being bland.\n\n3. Cost-cutting measures: Airlines often try to reduce costs, including food expenses. This can lead to using cheaper ingredients, limited options, and smaller portions. As a result, the quality and variety of the meals may not meet the expectations of passengers.\n\n4. Logistics and preparation: Preparing and serving food on an airplane is a logistical challenge. Meals need to be prepared in advance, packaged, and reheated onboard. These processes can impact the freshness and quality of the food.\n\nHowever, it's worth noting that not all airlines have the same quality of food. Some airlines, especially those in higher classes like business or first class, invest more in providing a better dining experience. They offer a wider range of options, higher quality ingredients, and even collaborate with renowned chefs to create their menus."
             },
             "finish_reason": "stop"
           }
         ],
         "usage": {
           "prompt_tokens": 15,
-          "completion_tokens": 246,
-          "total_tokens": 261
+          "completion_tokens": 291,
+          "total_tokens": 306
         }
       },
       "process_time": 5,
       "model": "gpt-3.5-turbo",
       "temperature": 0.5,
-      "from_cache": true
+      "from_cache": false
+    }
+  },
+  "Chat: \n        Xi, C. H. E. N., Hao, C. H. E. N., LU, W. B., Zhang, M., Yuan, T. A. O., Wang, Q. C., ... & Zhang, W. B. (2023). Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention. Biomedical and Environmental Sciences, 36(4), 324-333\n\n        type Props = {\n            authors: string[]; // L. M. First\n            year: number;\n            title: string;\n            journal: string;\n            edition?: number;\n            articleNumber: number;\n            pages?: {\n                start: number;\n                end: number;\n            };\n            doiLink: string;\n        };\n        Extract the above information and return the following JSX tag:\n        { {title}: <Citation {props} /> }\n        ": {
+    "ChatQuery": {
+      "prompt": "\n        Xi, C. H. E. N., Hao, C. H. E. N., LU, W. B., Zhang, M., Yuan, T. A. O., Wang, Q. C., ... & Zhang, W. B. (2023). Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention. Biomedical and Environmental Sciences, 36(4), 324-333\n\n        type Props = {\n            authors: string[]; // L. M. First\n            year: number;\n            title: string;\n            journal: string;\n            edition?: number;\n            articleNumber: number;\n            pages?: {\n                start: number;\n                end: number;\n            };\n            doiLink: string;\n        };\n        Extract the above information and return the following JSX tag:\n        { {title}: <Citation {props} /> }\n        ",
+      "cost": 1.713,
+      "response": {
+        "id": "chatcmpl-8exwnyoMtkaBQ7F0CV2QcBVKic2Cz",
+        "object": "chat.completion",
+        "created": 1704774249,
+        "model": "gpt-4-0613",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{ \"Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention\": <Citation \n    props = {{\n        authors: [\"Xi, C. H. E. N.\", \"Hao, C. H. E. N.\", \"LU, W. B.\", \"Zhang, M.\", \"Yuan, T. A. O.\", \"Wang, Q. C.\", \"Zhang, W. B.\"],\n        year: 2023,\n        title: \"Lower Baseline LDL Cholesterol Affects All-cause Mortality in Patients with First Percutaneous Coronary Intervention\",\n        journal: \"Biomedical and Environmental Sciences\",\n        edition: 36,\n        articleNumber: 4,\n        pages: {\n            start: 324,\n            end: 333\n        },\n        doiLink: \"\"\n    }} \n/> }"
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 199,
+          "completion_tokens": 186,
+          "total_tokens": 385
+        }
+      },
+      "process_time": 10,
+      "model": "gpt-4",
+      "temperature": 0.2,
+      "from_cache": false
     }
   }
 }

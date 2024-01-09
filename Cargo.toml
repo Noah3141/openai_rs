@@ -2,8 +2,8 @@
 name = "openai_rs"
 version = "0.1.0"
 edition = "2021"
-authors = ["Noah Steckley <Noah3141@gmail.com>","Dongri Jin <dongrify@gmail.com>"]
-description = "Unofficial Rust library for OpenAI's chatgpt API"
+authors = ["Noah Steckley <Noah3141@gmail.com>", "Dongri Jin <dongrify@gmail.com>"]
+description = "Home project crate for automating ChatGPT processing of text"
 readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

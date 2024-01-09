@@ -72,6 +72,8 @@ impl OpenAIAccount {
 
     }
 
+    /// `input_dir`
+    /// `pdf_title` filename without extension
     pub async fn apply_prompt_to_pdf(&mut self, pdf_title: &str, prompt: &str, input_dir: Option<String>) -> Result<TextQuery, Status> {
         println!("\n--🗳️");
         let dir = match input_dir { None => DEFAULT_PDF_DIR.to_string(), Some(s) => s };
