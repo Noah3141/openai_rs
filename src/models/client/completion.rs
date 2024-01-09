@@ -183,6 +183,7 @@ impl OpenAIAccount {
                     model: self.model,
                     messages: vec![
                         ChatCompletionMessage {
+                            role: MessageRole::system,
                             content: Some(String::from("You will receive a prompt, and data to which you will apply that prompt.")),
                             ..Default::default()
                         },
