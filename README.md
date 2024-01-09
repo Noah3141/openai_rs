@@ -23,7 +23,8 @@ let mut client = OpenAIAccount::new(
 ).await.expect("Initial startup");
 
 client.cache.clear();
-client.
+client.bill.reset();
+client.bill.print();
 
 let mut content = String::new();
 let f = std::fs::File::open("inputs.txt")
@@ -63,7 +64,7 @@ let meta_query: MetaQuery = client.meta_complete_cache(
     .await
     .expect("success of meta completion");
 
-println!("{}", meta_res.response.choices[0].to_owned().message.content.unwrap())
+println!("{}", meta_res.response.choices[0].to_owned().message.content.unwrap());
 
 let res = client.db.insert_query(meta_query.key(), &client.cache).await;
 
