@@ -28,7 +28,7 @@ pub struct OpenAIAccount  {
     /// Attribute used to save and retrieve running metrics, which are running totals of Query metrics. 
     /// <br> This variable is serialized into and deserialized from this OpenAIAccount's `.self.cache_filepath` attribute. The running total can be reset with ...
     /// <br> See struct `Bill` for a list of what is tracked.
-    pub(super) bill: Bill,
+    pub bill: Bill,
     /// Attribute used to save and retrieve Query metrics. 
     /// This variable is serialized into and deserialized from self.cache_filepath constant.
     /// If a query completion is sent, and the prompt is already found in the cache, the cached response is retrieved, and a new API request is not sent.

@@ -6,17 +6,17 @@ use crate::Query;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Bill {
     /// Total cost so far since last `.reset_bill()` in CENTS
-    pub cost: f32,
+    pub(crate) cost: f32,
     /// Total number of prompt tokens (used according to size of prompts) used so far since last `.reset_bill()`
-    pub prompt_tokens: i32,
+    pub(crate) prompt_tokens: i32,
     /// Total number of completion tokens (used according to size of responses) so far since last `.reset_bill()`
-    pub completion_tokens: i32,
+    pub(crate) completion_tokens: i32,
     /// Total token usage so far since last `.reset_bill()`
-    pub total_tokens: i32,
+    pub(crate) total_tokens: i32,
     /// Number of queries recorded so far since last `.reset_bill()`
-    pub query_count: i32,
+    pub(crate) query_count: i32,
     /// Number of times a ChatGPT completion was pulled from the cache instead of the API, because the prompt was found in the cache
-    pub cache_retrievals: i32,
+    pub(crate) cache_retrievals: i32,
     pub(super) filepath: PathBuf,
 }
 
@@ -35,11 +35,8 @@ impl Default for Bill {
 }
 
 impl Bill {
-    pub fn get_bill(&self) -> Bill {
-        self.clone()
-    }
 
-    pub fn update(&mut self, query: Option<Query>) -> () {
+    pub(crate) fn update(&mut self, query: Option<Query>) -> () {
 
         if let Some(query) = query { 
             let res = query.clone().response();
