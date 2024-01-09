@@ -167,6 +167,12 @@ impl OpenAIAccount {
                         let content = query.response.choices[0].message.content.clone().expect("presence of content field in GPT-response");
                         build_response_list.push_str(content.as_str());
                     }
+                    if let Query::ChatQuery(query) = query {
+                        iter += 1;
+                        build_response_list.push_str(format!("\n\n{iter})\n").as_str());
+                        let content = query.response.choices[0].message.content.clone().expect("presence of content field in GPT-response");
+                        build_response_list.push_str(content.as_str());
+                    }
                     //if iter == 3 {println!("--Current state of the input at 3:\n{build_input}");}
                 }
                 let response_list = build_response_list;
