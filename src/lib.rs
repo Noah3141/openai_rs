@@ -8,9 +8,10 @@ pub use crate::{
                 OpenAIAccount
             },
         },
-        queries:: *,
+        queries::{*, chat_query::Cacheable},
         GptModel,
         Query,
+        
     }
 };
 
