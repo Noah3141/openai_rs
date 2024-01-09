@@ -26,13 +26,13 @@ impl OpenAIAccount {
         let query = match self.cache.entries.get(&key) {
             // If found in cache, retrieve the query
             Some(query) => {
-                if let Query::ChatQuery(pq) = query {
-                    let mut pq = pq.clone(); 
-                    pq.from_cache = true;
+                if let Query::ChatQuery(cq) = query {
+                    let mut cq = cq.clone(); 
+                    cq.from_cache = true;
                     self.bill.cache_retrievals += 1; 
                     self.bill.update(None); 
                     println!("--[Cached Answer]--");
-                    pq
+                    cq
                 } else {
                     return Err(Status::RetrievedUnexpectedQueryType)
                 }
@@ -113,7 +113,7 @@ impl OpenAIAccount {
                             ..Default::default()
                         },
                         ChatCompletionMessage {
-                            role: MessageRole::assistant,
+                            role: MessageRole::system,
                             content: Some(format!("{doc}")),
                             ..Default::default()
                         },
@@ -187,7 +187,7 @@ impl OpenAIAccount {
                             ..Default::default()
                         },
                         ChatCompletionMessage {
-                            role: MessageRole::assistant,
+                            role: MessageRole::system,
                             content: Some(format!("Data: {response_list}")),
                             ..Default::default()
                         },
