@@ -28,9 +28,9 @@ impl Cache {
     /// Resets both the cache file and in-memory cache to empty
     pub fn clear(&mut self) {
         self.entries.clear();
-        let cache_file = match fs::OpenOptions::new().create(true).truncate(true).write(true).open(&self.filepath) {Ok(f)=>f, Err(e)=>panic!("🗳️  clear() had trouble initializing a new blank cache file at '{}' : \n❌  {}", self.filepath.display(), e)};
+        let cache_file = match fs::OpenOptions::new().create(true).truncate(true).write(true).open(&self.filepath) {Ok(f)=>f, Err(e)=>panic!("🗳️   clear() had trouble initializing a new blank cache file at '{}' : \n❌  {}", self.filepath.display(), e)};
         serde_json::to_writer_pretty(&cache_file, &self.entries).expect("Serialization of cache to cache file");
-        println!("🗳️ Cache cleared at: {}", self.filepath.display());
+        println!("🗳️   Cache cleared at: {}", self.filepath.display());
     }
 
     pub fn remove(&mut self, cache_key: String) -> Option<(String, Query)> {
@@ -39,9 +39,9 @@ impl Cache {
 
         match entry {
             Some(entry) => {
-                println!("🗳️  Removed cache entry at key: \"{cache_key}\"");
+                println!("🗳️   Removed cache entry at key: \"{cache_key}\"");
                 // Update the cache file
-                let cache_file = match fs::OpenOptions::new().create(true).truncate(true).write(true).open(&self.filepath) {Ok(f)=>f, Err(e)=>panic!("🗳️  Could not re-write cache file after removal at {}, due to error:  ❌  {}", self.filepath.display(), e)};
+                let cache_file = match fs::OpenOptions::new().create(true).truncate(true).write(true).open(&self.filepath) {Ok(f)=>f, Err(e)=>panic!("🗳️   Could not re-write cache file after removal at {}, due to error:  ❌  {}", self.filepath.display(), e)};
                 serde_json::to_writer_pretty(&cache_file, &self.entries).expect("Serialization of cache to cache file");
                 Some(entry)
             },
@@ -57,11 +57,11 @@ impl Cache {
             let graveyard = std::fs::OpenOptions::new().create(true).append(true).open("graveyard.json").expect("access to graveyard file");
             serde_json::to_writer_pretty(graveyard, &query).expect("Serialization of an overwritten model to the graveyard");
             println!("\n\n");
-            println!("🗳️  Caching a query resulted in an overwrite."); 
-            println!("🪦  The overwritten query can be found in the graveyard file.");
+            println!("🗳️   Caching a query resulted in an overwrite."); 
+            println!("🪦   The overwritten query can be found in the graveyard file.");
         }};
         // Save the state of self.cache to file
-        let cache = match fs::OpenOptions::new().create(true).truncate(true).write(true).open(&self.filepath) {Ok(f)=>f, Err(e)=>panic!("🗳️  Could not cache query at {}, due to error:  ❌  {}", self.filepath.display(), e)};
+        let cache = match fs::OpenOptions::new().create(true).truncate(true).write(true).open(&self.filepath) {Ok(f)=>f, Err(e)=>panic!("🗳️   Could not cache query at {}, due to error:  ❌  {}", self.filepath.display(), e)};
         serde_json::to_writer_pretty(&cache, &self.entries).expect("Serialization of cache to cache file");
     }
 
@@ -74,8 +74,8 @@ impl Cache {
                         let graveyard = std::fs::OpenOptions::new().create(true).append(true).open("graveyard.json").expect("access to graveyard file");
                         serde_json::to_writer_pretty(graveyard, &query).expect("Serialization of an overwritten model to the graveyard");
                         println!("\n\n");
-                        println!("🗳️  Caching a query resulted in an overwrite."); 
-                        println!("🪦  The overwritten query can be found in the graveyard file.");
+                        println!("🗳️   Caching a query resulted in an overwrite."); 
+                        println!("🪦   The overwritten query can be found in the graveyard file.");
                     }};
                 },
                 false => {
@@ -89,7 +89,7 @@ impl Cache {
             }
         }
 
-        let cache = match fs::OpenOptions::new().create(true).truncate(true).write(true).open(&self.filepath) {Ok(f)=>f, Err(e)=>panic!("🗳️  Could not cache query at {}, due to error:  ❌  {}", self.filepath.display(), e)};
+        let cache = match fs::OpenOptions::new().create(true).truncate(true).write(true).open(&self.filepath) {Ok(f)=>f, Err(e)=>panic!("🗳️   Could not cache query at {}, due to error:  ❌  {}", self.filepath.display(), e)};
         serde_json::to_writer_pretty(&cache, &self.entries).expect("Serialization of cache to cache file");
     }
 }
