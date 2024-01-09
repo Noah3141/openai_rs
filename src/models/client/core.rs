@@ -122,7 +122,7 @@ impl OpenAIAccount {
         let _graveyard = std::fs::OpenOptions::new().create(true).truncate(true).write(true).open("graveyard.json").expect("access to graveyard file");
         println!("🪦  Graveyard backups cleared.");
 
-        println!("🌡️  Model initialized at temperature {temperature}");
+        println!("🌡️   Model initialized at temperature {temperature}");
         Ok(OpenAIAccount {
             bill,
             cache,
