@@ -12,7 +12,7 @@ use super::queries::chat_query::Cacheable;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Cache {
     pub entries: HashMap<String,Query>,
-    pub(super) filepath: PathBuf,
+    pub filepath: PathBuf,
 }
 
 impl Default for Cache {

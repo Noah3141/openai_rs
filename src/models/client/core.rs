@@ -23,7 +23,6 @@ pub struct OpenAIAccount  {
     pub(super) model: GptModel,
     /// Default value looks for `CHATGPT_API_KEY` environment var
     pub(super) api_key: String,
-    /// `0.0 - 0.4`: Produces more focused, conservative, and consistent responses. <br> `0.5 - 0.7`: Strikes a balance between creativity and consistency. <br> `0.8 - 1.0`: Generates more creative, diverse, and unexpected outputs. <br> Default sets to 0.0
     pub(super) temperature: f32,
     /// Attribute used to save and retrieve running metrics, which are running totals of Query metrics. 
     /// <br> This variable is serialized into and deserialized from this OpenAIAccount's `.self.cache_filepath` attribute. The running total can be reset with ...
@@ -35,6 +34,42 @@ pub struct OpenAIAccount  {
     /// Keys are prompts, values are Queries (which themselves hold the prompt, model, etc.)
     pub cache: Cache,
     pub db: DbMethods,
+}
+
+pub struct Opts {
+    pub model: GptModel,
+    /// `0.0 - 0.4`: Produces more focused, conservative, and consistent responses. <br> `0.5 - 0.7`: Strikes a balance between creativity and consistency. <br> `0.8 - 1.0`: Generates more creative, diverse, and unexpected outputs. <br> Default sets to 0.0
+    pub temperature: f32,
+    /// `bool` for whether you plan to use database functionality. If not, it will not try to connect, and panic on usage of db methods. Else if true, connects once on initialization.
+    pub database: bool,
+    /// If path does not exist, error. Will not create path for you.
+    pub bill_filepath: PathBuf, 
+    /// If path does not exist, error. Will not create path for you.
+    pub cache_filepath: PathBuf 
+}
+
+impl Default for Opts {
+    /// Defaults:
+    /// ```
+    /// use openai_rs::*;
+    /// 
+    /// Opts {
+    ///     model: GptModel::Gpt35Turbo,
+    ///     temperature: 0.5,
+    ///     database: false,
+    ///     bill_filepath: "./bill.json".into(),
+    ///     cache_filepath: "./cache.json".into() 
+    /// };
+    /// ```
+    fn default() -> Self {
+        Opts {
+            model: GptModel::Gpt35Turbo,
+            temperature: 0.5,
+            database: false,
+            bill_filepath: "./bill.json".into(),
+            cache_filepath: "./cache.json".into() 
+        }
+    }
 }
 
 
@@ -52,15 +87,10 @@ impl Default for OpenAIAccount {
 }
 
 impl OpenAIAccount {
-    pub async fn new(
-        model: GptModel, 
-        temperature: f32, 
-        database: bool,
-        bill_filepath: Option<PathBuf>, 
-        cache_filepath: Option<PathBuf> ) -> Result<OpenAIAccount, Status> {
+    pub async fn new(opts: Opts) -> Result<OpenAIAccount, Status> {
 
-        let bill_filepath = bill_filepath.unwrap_or( "./bill.json".into() );
-        let cache_filepath = cache_filepath.unwrap_or( "./cache.json".into() );
+        let bill_filepath = opts.bill_filepath;
+        let cache_filepath = opts.cache_filepath;
 
         let api_key = dotenvy::var("CHATGPT_API_KEY").expect("CHATGPT_API_KEY environment variable").to_string();
         
@@ -68,7 +98,7 @@ impl OpenAIAccount {
         let db = DbMethods::try_init().await.map_err(|e| { res = Err(e) }).ok();
 
         match db {
-            None => match database {
+            None => match opts.database {
                 true => return Err(res.unwrap_err()),
                 false => (),
             },
@@ -87,7 +117,7 @@ impl OpenAIAccount {
                 bill
             },
             Err(_) => {
-                fs::File::create(&bill_filepath).expect(format!("Creation of Bill file, after having not found any file at {}", bill_filepath.display()).as_str() );
+                fs::File::create(&bill_filepath).expect(format!("Tried but failed to create a new bill file, after having not being able to open: {}", bill_filepath.display()).as_str() );
                 let bill = Bill { filepath: bill_filepath, ..Default::default() };
                 println!("🧾 Empty Bill created at: {}", bill.filepath.display());
                 bill
@@ -109,7 +139,7 @@ impl OpenAIAccount {
                 cache
             },
             Err(_) => { // HashMap<String, Query>
-                fs::File::create(&cache_filepath).expect(format!("Creation of Cache file, after having not found any file at {}", cache_filepath.display()).as_str() );
+                fs::File::create(&cache_filepath).expect(format!("Tried but failed to create a new cache file, after having not being able to open:  {}", cache_filepath.display()).as_str() );
                 let blank_cache = Cache {
                     filepath: cache_filepath,
                     ..Default::default()
@@ -122,13 +152,13 @@ impl OpenAIAccount {
         let _graveyard = std::fs::OpenOptions::new().create(true).truncate(true).write(true).open("graveyard.json").expect("access to graveyard file");
         println!("🪦  Graveyard backups cleared.");
 
-        println!("🌡️   Model initialized at temperature {temperature}");
+        println!("🌡️   Model initialized at temperature {}", opts.temperature);
         Ok(OpenAIAccount {
             bill,
             cache,
-            model,
             api_key,
-            temperature,
+            model: opts.model,
+            temperature: opts.temperature,
             db: DbMethods {
                 conn: db
             },
