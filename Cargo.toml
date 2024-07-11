@@ -15,6 +15,6 @@ reqwest = { version = "0.12.5", features = ["stream","multipart","json"] }
 chrono = "0.4.26"
 sea-orm = { version = "1.0.0-rc.7", features = [ "sqlx-postgres", "runtime-tokio-native-tls", "macros" ] }
 sea-query = "0.30.7"
-# lopdf = "0.32.0"
+lopdf = "0.32.0"
 dotenvy = "0.15.7"
 tokio ={ version = "1.35.1", features = ["rt", "macros"]}

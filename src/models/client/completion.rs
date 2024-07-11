@@ -74,79 +74,79 @@ impl OpenAIAccount {
 
     /// `input_dir`
     /// `pdf_title` filename without extension
-    // pub async fn apply_prompt_to_pdf(&mut self, pdf_title: &str, prompt: &str, input_dir: Option<String>) -> Result<TextQuery, Status> {
-    //     println!("\n--🗳️");
-    //     let dir = match input_dir { None => DEFAULT_PDF_DIR.to_string(), Some(s) => s };
-    //     let path_to_pdf = if dir.ends_with("/") {format!("{dir}{pdf_title}.pdf")} else if dir.contains("\\") {format!("{dir}\\{pdf_title}.pdf")} else {format!("{dir}/{pdf_title}.pdf")};
-    //     let key = TextQuery::key(prompt, pdf_title);
+    pub async fn apply_prompt_to_pdf(&mut self, pdf_title: &str, prompt: &str, input_dir: Option<String>) -> Result<TextQuery, Status> {
+        println!("\n--🗳️");
+        let dir = match input_dir { None => DEFAULT_PDF_DIR.to_string(), Some(s) => s };
+        let path_to_pdf = if dir.ends_with("/") {format!("{dir}{pdf_title}.pdf")} else if dir.contains("\\") {format!("{dir}\\{pdf_title}.pdf")} else {format!("{dir}/{pdf_title}.pdf")};
+        let key = TextQuery::key(prompt, pdf_title);
 
-    //     let query = match self.cache.entries.get(&key) {
-    //         // If found in cache, retrieve the query
-    //         Some(query) => {
-    //             let mut query = query.clone().expect_as_text();
-    //             query.from_cache = true; 
-    //             self.bill.cache_retrievals += 1; 
-    //             self.bill.update(None); 
-    //             println!("--[Cached Answer]--");
-    //             query
-    //         },
-    //         // If absent, send to OpenAI
-    //         None => {
-    //             let from_cache = false;
-    //             println!("--[Sending to GPT]--");
-    //             // Load the pdf from the provided file path, or else return to the caller a NotFoundError 
-    //             let pdf = lopdf::Document::load(path_to_pdf).map_err(|e| return Status::Error(e.to_string()))?;
+        let query = match self.cache.entries.get(&key) {
+            // If found in cache, retrieve the query
+            Some(query) => {
+                let mut query = query.clone().expect_as_text();
+                query.from_cache = true; 
+                self.bill.cache_retrievals += 1; 
+                self.bill.update(None); 
+                println!("--[Cached Answer]--");
+                query
+            },
+            // If absent, send to OpenAI
+            None => {
+                let from_cache = false;
+                println!("--[Sending to GPT]--");
+                // Load the pdf from the provided file path, or else return to the caller a NotFoundError 
+                let pdf = lopdf::Document::load(path_to_pdf).map_err(|e| return Status::Error(e.to_string()))?;
             
-    //             let mut doc = String::new();
-    //             for page in 1..=pdf.get_pages().len() {
-    //                 let content = pdf.extract_text(&[page as u32]).expect("parse");
-    //                 doc.push_str(&content);
-    //             }
+                let mut doc = String::new();
+                for page in 1..=pdf.get_pages().len() {
+                    let content = pdf.extract_text(&[page as u32]).expect("parse");
+                    doc.push_str(&content);
+                }
                 
-    //             let req = ChatCompletionRequest {
-    //                 model: self.model,
-    //                 temperature: Some(self.temperature.into()),
-    //                 messages: vec![
-    //                     ChatCompletionMessage {
-    //                         role: MessageRole::system,
-    //                         content: Some(String::from("You will receive a document, and a prompt regarding the document.")),
-    //                         ..Default::default()
-    //                     },
-    //                     ChatCompletionMessage {
-    //                         role: MessageRole::system,
-    //                         content: Some(format!("{doc}")),
-    //                         ..Default::default()
-    //                     },
-    //                     ChatCompletionMessage {
-    //                         role: MessageRole::user,
-    //                         content: Some(format!("{prompt}")),
-    //                         ..Default::default()
-    //                     },
-    //                 ], 
-    //                 ..Default::default()
-    //             };
+                let req = ChatCompletionRequest {
+                    model: self.model,
+                    temperature: Some(self.temperature.into()),
+                    messages: vec![
+                        ChatCompletionMessage {
+                            role: MessageRole::system,
+                            content: Some(String::from("You will receive a document, and a prompt regarding the document.")),
+                            ..Default::default()
+                        },
+                        ChatCompletionMessage {
+                            role: MessageRole::system,
+                            content: Some(format!("{doc}")),
+                            ..Default::default()
+                        },
+                        ChatCompletionMessage {
+                            role: MessageRole::user,
+                            content: Some(format!("{prompt}")),
+                            ..Default::default()
+                        },
+                    ], 
+                    ..Default::default()
+                };
 
-    //             let start_time = std::time::Instant::now();
-    //             let response = self.send_completion_request(req).await.map_err(|e| Status::Error(e.to_string()))?;
-    //             let process_time = start_time.elapsed().as_millis() as u64;
+                let start_time = std::time::Instant::now();
+                let response = self.send_completion_request(req).await.map_err(|e| Status::Error(e.to_string()))?;
+                let process_time = start_time.elapsed().as_millis() as u64;
                 
-    //             println!("--[Completion received]--");
+                println!("--[Completion received]--");
 
-    //             // Build Query from Response
-    //             let text_query = TextQuery { prompt: prompt.to_string(), response: response.clone(), document_title: pdf_title.to_string(), model: self.model, process_time, cost: response.cost(&self.model), temperature: self.temperature, from_cache };
-    //             let query_for_cache = Query::TextQuery(text_query.clone());
+                // Build Query from Response
+                let text_query = TextQuery { prompt: prompt.to_string(), response: response.clone(), document_title: pdf_title.to_string(), model: self.model, process_time, cost: response.cost(&self.model), temperature: self.temperature, from_cache };
+                let query_for_cache = Query::TextQuery(text_query.clone());
                 
-    //             self.cache.insert(&query_for_cache); // Add Query to Cache
-    //             self.bill.update(Some(query_for_cache)); // Add data to Bill
-    //             println!("--[Bill now shows: ${:.2}]--", self.bill.cost / 100.0);
-    //             println!("--[Took: {}ms, Cost: ¢{:.4}]--", process_time, (response.cost(&self.model)));
-    //             text_query
-    //         },
-    //     };
-    //     println!("--[Got from or created to cache ('{}') under key: \"{key}\"]--", self.cache.filepath.display());
-    //     println!("--");
-    //     Ok(query)
-    // }
+                self.cache.insert(&query_for_cache); // Add Query to Cache
+                self.bill.update(Some(query_for_cache)); // Add data to Bill
+                println!("--[Bill now shows: ${:.2}]--", self.bill.cost / 100.0);
+                println!("--[Took: {}ms, Cost: ¢{:.4}]--", process_time, (response.cost(&self.model)));
+                text_query
+            },
+        };
+        println!("--[Got from or created to cache ('{}') under key: \"{key}\"]--", self.cache.filepath.display());
+        println!("--");
+        Ok(query)
+    }
 
 
     pub async fn meta_complete_cache(&mut self, prompt: &str) -> Result<MetaQuery, Status>  {

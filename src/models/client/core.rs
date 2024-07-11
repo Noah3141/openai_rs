@@ -36,6 +36,7 @@ pub struct OpenAIAccount  {
     pub db: DbMethods,
 }
 
+#[derive(Debug, Clone)]
 pub struct Opts {
     pub model: GptModel,
     /// `0.0 - 0.4`: Produces more focused, conservative, and consistent responses. <br> `0.5 - 0.7`: Strikes a balance between creativity and consistency. <br> `0.8 - 1.0`: Generates more creative, diverse, and unexpected outputs. <br> Default sets to 0.0
