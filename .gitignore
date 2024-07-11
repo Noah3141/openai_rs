@@ -1,2 +1,5 @@
 /target
 .env
+bill.json
+graveyard.json
+cache.json

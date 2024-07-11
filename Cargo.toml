@@ -11,10 +11,10 @@ readme = "README.md"
 [dependencies]
 serde_json = "1.0.96"
 serde = { version = "1.0.160", features = ["derive"] } # Serialization deserialization
-reqwest = { version = "0.11.11", features = ["stream","multipart","json"] }
+reqwest = { version = "0.12.5", features = ["stream","multipart","json"] }
 chrono = "0.4.26"
-sea-orm = { version = "0.12.10", features = [ "sqlx-postgres", "runtime-tokio-native-tls", "macros" ] }
-sea-query = "0.30.6"
-lopdf = "0.31.0"
+sea-orm = { version = "1.0.0-rc.7", features = [ "sqlx-postgres", "runtime-tokio-native-tls", "macros" ] }
+sea-query = "0.30.7"
+# lopdf = "0.32.0"
 dotenvy = "0.15.7"
 tokio ={ version = "1.35.1", features = ["rt", "macros"]}
