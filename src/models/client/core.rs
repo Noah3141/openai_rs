@@ -88,10 +88,10 @@ impl Default for OpenAIAccount {
 }
 
 impl OpenAIAccount {
-    pub async fn new(opts: Opts) -> Result<OpenAIAccount, Status> {
+    pub async fn new(opts: &Opts) -> Result<OpenAIAccount, Status> {
 
-        let bill_filepath = opts.bill_filepath;
-        let cache_filepath = opts.cache_filepath;
+        let bill_filepath = &opts.bill_filepath;
+        let cache_filepath = &opts.cache_filepath;
 
         let api_key = dotenvy::var("CHATGPT_API_KEY").expect("CHATGPT_API_KEY environment variable").to_string();
         
@@ -112,14 +112,14 @@ impl OpenAIAccount {
                 // Read the JSON contents of the file as an instance of...
                 let bill: Bill = serde_json::from_reader(reader).unwrap_or_else(|e| {
                     println!("🧾 Initializing client with default blank bill due to:  ❌  {e}") ; 
-                    Bill { filepath: bill_filepath, ..Default::default() }
+                    Bill { filepath: bill_filepath.to_path_buf(), ..Default::default() }
                 });
                 println!("🧾 Bill read from: {}", bill.filepath.display());
                 bill
             },
             Err(_) => {
                 fs::File::create(&bill_filepath).expect(format!("Tried but failed to create a new bill file, after having not being able to open: {}", bill_filepath.display()).as_str() );
-                let bill = Bill { filepath: bill_filepath, ..Default::default() };
+                let bill = Bill { filepath: bill_filepath.to_path_buf(), ..Default::default() };
                 println!("🧾 Empty Bill created at: {}", bill.filepath.display());
                 bill
             },
@@ -134,7 +134,7 @@ impl OpenAIAccount {
                 });
                 let cache = Cache {
                     entries,
-                    filepath: cache_filepath
+                    filepath: cache_filepath.to_path_buf()
                 };
                 println!("🗳️   Cache read from: {}", &cache.filepath.display());
                 cache
@@ -142,7 +142,7 @@ impl OpenAIAccount {
             Err(_) => { // HashMap<String, Query>
                 fs::File::create(&cache_filepath).expect(format!("Tried but failed to create a new cache file, after having not being able to open:  {}", cache_filepath.display()).as_str() );
                 let blank_cache = Cache {
-                    filepath: cache_filepath,
+                    filepath: cache_filepath.to_path_buf(),
                     ..Default::default()
                 };
                 println!("🗳️   Empty Cache created at: {}", blank_cache.filepath.display());
